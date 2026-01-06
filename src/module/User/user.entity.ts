@@ -1,25 +1,9 @@
-import {
-  Column,
-  Entity,
-  Index,
-  JoinTable,
-  ManyToMany,
-  PrimaryGeneratedColumn
-} from "typeorm";
-import { Video } from "../Video/video.entity";
+import { Column, Entity, Index, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
-export class User {
+export class User  {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
-
-  @ManyToMany(() => Video, (video) => video.viewers)
-  @JoinTable({
-    name: "watch_history",
-    joinColumn: { name: "user_id", referencedColumnName: "id" },
-    inverseJoinColumn: { name: "video_id", referencedColumnName: "id" },
-  })
-  watchHistory!: Video[];
 
   @Column({ name: "username", type: "varchar", unique: true })
   @Index({ unique: true })
@@ -40,7 +24,16 @@ export class User {
   @Column({ name: "password", type: "varchar", nullable: true, select: false })
   password?: string | null;
 
-  @Column({ name: "refresh_token", type: "varchar", nullable: true })
-  refreshToken!: string | null;
+  @Column({ name: "watch_history_id", type: "jsonb"})
+  watchHistoryId!: string[];
+}
 
+
+export interface IUser {
+  id: string;
+  userName: string;
+  email?: string | null;
+  fullName?: string;
+  avatar: string;
+  coverImage: string;
 }

@@ -1,13 +1,13 @@
 import * as bodyParser from "body-parser";
-import * as dotenv from 'dotenv';
-import * as express from "express";
-import userRoutes from "./module/User/user.routes";
+import express from "express";
+import { initializeRoutes } from "./router";
 
-dotenv.config();
-
+console.log("DB_PASS:", process.env.DB_PASSWORD);
 const app = express();
 
 app.use(bodyParser.json());
-app.use("/api", userRoutes);
+
+const apiRouter = initializeRoutes();
+app.use("/api", apiRouter);
 
 export default app;

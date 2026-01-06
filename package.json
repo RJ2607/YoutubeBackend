@@ -2,14 +2,23 @@
    "name": "youtubebackend",
    "version": "0.0.1",
    "description": "Awesome project developed with TypeORM.",
-   "type": "commonjs",
+   "scripts": {
+      "build": "tsc",
+      "test": "NODE_OPTIONS=--enable-source-maps mocha --exit --file build/tests/index.test.js",
+      "test-w": "set NODE_OPTIONS=--enable-source-maps && set CI=true && mocha --exit build/tests/index.test.js",
+      "lint": "eslint src/**/*.ts",
+      "watch": "tsc -w",
+      "dev": "NODE_OPTIONS=--enable-source-maps nodemon -L -w ./build -w ./src -w docs/build/docs.yaml build/index.js",
+      "dev-w": "set NODE_OPTIONS=--enable-source-maps && nodemon -L -w build -w src build/index.js",
+      "start": "node build/index.js",
+      "typeorm": "typeorm-ts-node-commonjs"
+   },
    "devDependencies": {
       "@types/bcrypt": "^6.0.0",
       "@types/body-parser": "^1.19.6",
       "@types/dotenv": "^6.1.1",
       "@types/express": "^5.0.3",
-      "@types/node": "^22.13.10",
-      "nodemon": "^3.1.10",
+      "@types/node": "^22.19.0",
       "ts-node": "^10.9.2",
       "ts-node-dev": "^2.0.0",
       "typescript": "^5.8.2"
@@ -19,16 +28,12 @@
       "body-parser": "^1.20.3",
       "dotenv": "^17.2.2",
       "express": "^4.21.2",
+      "generic-pool": "^3.9.0",
+      "ioredis": "^5.8.2",
       "jsonwebtoken": "^9.0.2",
       "mysql2": "^3.14.0",
       "pg": "^8.16.3",
       "reflect-metadata": "^0.2.2",
       "typeorm": "^0.3.27"
-   },
-   "scripts": {
-      "dev": "nodemon",
-      "start": "node dist/index.js",
-      "build": "tsc",
-      "typeorm": "typeorm-ts-node-commonjs"
    }
 }

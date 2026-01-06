@@ -6,7 +6,6 @@
       "target": "es2021",
       "module": "commonjs",
       "moduleResolution": "node",
-      "ignoreDeprecations":"6.0",
       "outDir": "./build",
       "emitDecoratorMetadata": true,
       "experimentalDecorators": true,
