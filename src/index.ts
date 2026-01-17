@@ -8,7 +8,7 @@ AppDataSource.initialize()
     app.listen(process.env.PORT);
 
     console.log(
-      "Express server has started on port " + process.env.PORT + ". Open http://localhost" + process.env.PORT + ":api to see results"
+      "Express server has started on port " + process.env.PORT + ". Open http://localhost:" + process.env.PORT + "/api to see results"
     );
   })
   .catch((error) => console.log(error));

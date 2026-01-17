@@ -1,33 +1,40 @@
 import { Column, Entity, Index, PrimaryGeneratedColumn } from "typeorm";
 
-@Entity()
-export class User  {
+@Entity({ name: "users" })
+export class User implements IUser {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
 
-  @Column({ name: "username", type: "varchar", unique: true })
+  @Column({ name: "username", type: "varchar", unique: true, nullable: true })
   @Index({ unique: true })
   userName!: string;
 
-  @Column({ name: "email", type: "varchar", length: 500, nullable: true })
+  @Column({ name: "email", type: "varchar" })
   email!: string | null;
 
-  @Column({ name: "fullname", type: "varchar", nullable: true })
-  fullName?: string;
+  @Column({ name: "full_name", type: "varchar", nullable: true })
+  fullName!: string;
 
-  @Column({ name: "avatar", type: "text" })
+  @Column({ name: "avatar", type: "varchar", nullable: true })
   avatar!: string;
 
-  @Column({ name: "cover_image", type: "text" })
+  @Column({ name: "cover_image", type: "varchar", nullable: true })
   coverImage!: string;
 
-  @Column({ name: "password", type: "varchar", nullable: true, select: false })
-  password?: string | null;
+  @Column({ name: "password", type: "varchar" })
+  password!: string;
 
-  @Column({ name: "watch_history_id", type: "jsonb"})
-  watchHistoryId!: string[];
+  constructor(it?: IUser) {
+    if (it) {
+      if (it.id) this.id = it.id;
+      this.userName = it.userName;
+      this.email = it.email;
+      this.fullName = it.fullName;
+      this.avatar = it.avatar;
+      this.coverImage = it.coverImage;
+    }
+  }
 }
-
 
 export interface IUser {
   id: string;

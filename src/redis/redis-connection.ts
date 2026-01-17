@@ -1,43 +1,38 @@
-import { RedisConnectionObjectInterface } from './types'
-import RedisPool from './redis-client'
-import { RedisPoolOptions } from '../redis/types'
-import { log } from '@smoke-trees/postgres-backend'
-import settings from '../settings'
+import { RedisPoolOptions } from "../redis/types";
+import RedisPool from "./redis-client";
+import { RedisConnectionObjectInterface } from "./types";
 
 const dbOptions: RedisPoolOptions = {
-	host: settings.redisHost,
-	port: settings.redisport,
-	username: settings.redisUsename,
-	password: settings.redisPassword,
-	db: settings.redisdb
-}
+  host: "localhost",
+  port: 6379,
+  username: "",
+  password: "",
+  db: 0,
+};
 
 const connect = async (): Promise<RedisConnectionObjectInterface> => {
-	try {
-		const pool = new RedisPool(dbOptions)
-		log.info('Connected  to redis Database', 'connect redis')
-		return { connection: pool }
-	} catch (error) {
-		log.error('Error in connecting to redis db', 'connect redis', error)
-		process.exit(1)
-	}
-}
+  try {
+    const pool = new RedisPool(dbOptions);
+    return { connection: pool };
+  } catch (error) {
+    process.exit(1);
+  }
+};
 
-export const RedisDatabaseObject = connect()
+export const RedisDatabaseObject = connect();
 
 export class RediConnectionClass {
-	public async getConnection(): Promise<RedisPool | null> {
-		try {
-			const { connection } = await RedisDatabaseObject
-			if (!connection) {
-				log.error('Error in connecting to redis db', 'connect redis')
-				return null
-			}
-			return connection
-		} catch (error) {
-			return null
-		}
-	}
+  public async getConnection(): Promise<RedisPool | null> {
+    try {
+      const { connection } = await RedisDatabaseObject;
+      if (!connection) {
+        return null;
+      }
+      return connection;
+    } catch (error) {
+      return null;
+    }
+  }
 }
 
-export default RedisDatabaseObject
+export default RedisDatabaseObject;

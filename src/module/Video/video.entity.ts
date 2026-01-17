@@ -1,35 +1,51 @@
-import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from "typeorm";
-import { User } from "../User/user.entity";
+import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
-export class Video {
+export class Video implements IVideo {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
 
-  @Column({ name: "video_file", type: "text" })
-  videoFile!: string;
+  @Column({ name: "video_url", type: "varchar" })
+  videoUrl!: string;
 
-  @Column({ name: "thumbnail", type: "text" })
-  thumbnail!: string;
+  @Column({ name: "thumbnail_url", type: "varchar" })
+  thumbnailUrl!: string;
 
-  @Column({ name: "owner", type: "varchar" })
-  owner!: string;
+  @Column({ name: "user_id", type: "uuid" })
+  userId!: string;
 
   @Column({ name: "title", type: "varchar" })
   title!: string;
 
-  @Column({ name: "description", type: "text" })
+  @Column({ name: "description", type: "varchar" })
   description!: string;
 
   @Column({ name: "duration", type: "float" })
   duration!: number;
 
-  @Column({ name: "views", type: "int", default: 0 })
-  views!: number;
-
   @Column({ name: "is_published", type: "boolean", default: false })
   isPublished!: boolean;
 
-  @ManyToMany(() => User, (user) => user.watchHistory)
-  viewers!: User[];
+  constructor(it?: IVideo) {
+    if (it) {
+      this.id = it.id;
+      this.videoUrl = it.videoUrl;
+      this.thumbnailUrl = it.thumbnailUrl;
+      this.userId = it.userId;
+      this.title = it.title;
+      this.description = it.description;
+      this.isPublished = it.isPublished;
+    }
+  }
+}
+
+export interface IVideo {
+  id: string;
+  videoUrl: string;
+  thumbnailUrl: string;
+  userId: string;
+  title: string;
+  description: string;
+  duration: number;
+  isPublished: boolean;
 }

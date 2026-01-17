@@ -1,172 +1,170 @@
-import { Request, Response } from "express";
-import { Repository } from "typeorm";
-import { ErrorCode } from "../../helper/response";
-import { checkPassword, hashPassword, sendResponse } from "../../helper/utils";
-import { User } from "./user.entity";
-import { UserService } from "./user.service";
+import { Request, Response } from 'express'
+import { Repository } from 'typeorm'
+import { ErrorCode, Result } from '../../helper/response'
+import { sendResponse } from '../../helper/utils'
+import { IUser, User } from './user.entity'
+import { UserService } from './user.service'
 
 export class UserController {
-  userRepo: Repository<User>;
-  service: UserService;
+	userRepo: Repository<User>
+	service: UserService
 
-  constructor(userRepo: Repository<User>, service: UserService) {
-    this.userRepo = userRepo;
-    this.service = service;
-  }
+	constructor(userRepo: Repository<User>, service: UserService) {
+		this.userRepo = userRepo
+		this.service = service
+	}
 
-  async getUsers(req: Request, res: Response) {
-    const users = await this.userRepo.find();
-    res.json(users);
-  }
+	async getUsers(req: Request, res: Response) {
+		const users = await this.userRepo.find()
 
-  async signUp(req: Request, res: Response) {
-    const { fullName, email, password } = req.body;
+		return sendResponse(
+			res,
+			new Result({
+				code: ErrorCode.Success,
+				error: false,
+				message: 'Success in readmany', // add pagination here
+				result: users
+			})
+		)
+	}
 
-    if (!fullName || !email || !password) {
-      return sendResponse(res, {
-        statusCode: ErrorCode.BadRequest,
-        error: true,
-        message: "Bad response",
-        result: "Missing fields",
-      });
-    }
+	async updateUserHandler(req: Request, res: Response) {
+		const userDate: IUser = req.body
+		const result = await this.service.updateUser(userDate)
+		sendResponse(res, result)
+		return
+	}
 
-    if (password.length < 8) {
-      return sendResponse(res, {
-        statusCode: ErrorCode.BadRequest,
-        error: true,
-        message: "Bad response",
-        result: "Password requirements are not met.",
-      });
-    }
+	async signUpHandler(req: Request, res: Response) {
+		const { email, password } = req.body
+		const result = await this.service.signUp(email, password)
+		sendResponse(res, result)
+		return
+	}
 
-    const userExists = await this.userRepo.existsBy({
-      email: email,
-    });
+	async signInHandler(req: Request, res: Response) {
+		const { email, password } = req.body
+		const result = await this.service.signIn(email, password)
+		sendResponse(res, result)
+		return
+	}
 
-    if (userExists) {
-      return sendResponse(res, {
-        statusCode: ErrorCode.BadRequest,
-        error: true,
-        message: "Bad response",
-        result: "User already exists",
-      });
-    }
+	async refreshToken(req: Request, res: Response) {
+		const { refreshToken } = req.body
 
-    const hashedPassword = await hashPassword(password);
-    const user = this.userRepo.create({
-      fullName: fullName,
-      email: email,
-      password: hashedPassword,
-    });
+		if (!refreshToken) {
+			return sendResponse(
+				res,
+				new Result({
+					code: ErrorCode.BadRequest,
+					error: true,
+					message: 'Bad response',
+					result: 'Missing refresh token'
+				})
+			)
+		}
 
-    await this.userRepo.save(user);
+		const response = await this.service.refreshToken(refreshToken)
 
-    const tokenResponse = await this.service.generateToken(user);
+		return sendResponse(
+			res,
+			new Result({
+				code: response.status.code,
+				error: response.status.error,
+				message: response.message,
+				result: response.result
+			})
+		)
+	}
 
-    return sendResponse(res, {
-      statusCode: ErrorCode.Created,
-      error: false,
-      message: "Successfully created your account",
-      result: tokenResponse.result,
-    });
-  }
+	async logout(req: Request, res: Response) {
+		const { refreshToken } = req.body
 
-  async signIn(req: Request, res: Response) {
-    const { credentials, password } = req.body;
+		if (!refreshToken) {
+			return sendResponse(
+				res,
+				new Result({
+					code: ErrorCode.BadRequest,
+					error: true,
+					message: 'Bad response',
+					result: 'Missing refresh token'
+				})
+			)
+		}
 
-    if (!credentials || !password) {
-      return sendResponse(res, {
-        statusCode: ErrorCode.BadRequest,
-        error: true,
-        message: "Bad response",
-        result: "Missing fields",
-      });
-    }
+		const response = await this.service.invalidateToken(refreshToken)
 
-    const user = await this.userRepo.findOne({
-      where: [{ email: credentials }, { userName: credentials }],
-    });
+		return sendResponse(
+			res,
+			new Result({
+				code: response.status.code,
+				error: response.status.error,
+				message: response.message,
+				result: response.result
+			})
+		)
+	}
 
-    if (!user) {
-      return sendResponse(res, {
-        statusCode: ErrorCode.BadRequest,
-        error: true,
-        message: "Bad response",
-        result: "Invalid credentials",
-      });
-    }
+	async getUserById(req: Request, res: Response) {
+		const user = await this.userRepo.findOneBy({ id: req.params.id })
+		if (!user) {
+			return sendResponse(
+				res,
+				new Result({
+					error: true,
+					code: ErrorCode.NotFound,
+					message: 'User Not Found'
+				})
+			)
+		}
+		return sendResponse(
+			res,
+			new Result({
+				error: false,
+				code: ErrorCode.Success,
+				message: 'User Found',
+				result: user
+			})
+		)
+	}
 
-    const check = await checkPassword(password, user.password);
+	async onboardUserHandler(req: Request, res: Response) {
+		const { userName, fullName, avatar, coverImage, userId } = req.body
 
-    if (!check) {
-      return sendResponse(res, {
-        statusCode: ErrorCode.BadRequest,
-        error: true,
-        message: "Bad response",
-        result: "Invalid credentials",
-      });
-    }
+		if (!userName || !fullName || !userId) {
+			return sendResponse(
+				res,
+				new Result({
+					error: true,
+					code: ErrorCode.BadRequest,
+					message: 'Missing required params'
+				})
+			)
+		}
 
-    const tokenResponse = await this.service.generateToken(user);
+		const result = await this.service.onboardUser(userName, fullName, avatar, coverImage, userId)
+		sendResponse(res, result)
+		return
+	}
 
-    return sendResponse(res, {
-      statusCode: ErrorCode.Success,
-      error: false,
-      message: "Successfully signed in",
-      result: tokenResponse.result,
-    });
-  }
+	async verifyUserNameHandler(req: Request, res: Response) {
+		const { userName } = req.query
 
-  async refreshToken(req: Request, res: Response) {
-    const { refreshToken } = req.body;
+		if (!userName) {
+			return sendResponse(
+				res,
+				new Result({
+					error: true,
+					code: ErrorCode.BadRequest,
+					message: 'Missing required params'
+				})
+			)
+		}
 
-    if (!refreshToken) {
-      return sendResponse(res, {
-        statusCode: ErrorCode.BadRequest,
-        error: true,
-        message: "Bad response",
-        result: "Missing refresh token",
-      });
-    }
+		// verify userName
+		const result = await this.service.verifyUser(userName?.toString())
 
-    const response = await this.service.refreshToken(refreshToken);
-
-    return sendResponse(res, {
-      statusCode: response.status.code,
-      error: response.status.error,
-      message: response.message,
-      result: response.result,
-    });
-  }
-
-  async logout(req: Request, res: Response) {
-    const { refreshToken } = req.body;
-
-    if (!refreshToken) {
-      return sendResponse(res, {
-        statusCode: ErrorCode.BadRequest,
-        error: true,
-        message: "Bad response",
-        result: "Missing refresh token",
-      });
-    }
-
-    const response = await this.service.invalidateToken(refreshToken);
-
-    return sendResponse(res, {
-      statusCode: response.status.code,
-      error: response.status.error,
-      message: response.message,
-      result: response.result,
-    });
-  }
-
-  async getUserById(req: Request, res: Response) {
-    const user = await this.userRepo.findOneBy({ id: req.params.id });
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-    res.json(user);
-  }
+		sendResponse(res, result)
+		return
+	}
 }
