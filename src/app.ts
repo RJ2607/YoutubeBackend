@@ -1,13 +1,13 @@
-import * as bodyParser from "body-parser";
-import express from "express";
-import { initializeRoutes } from "./router";
+import * as bodyParser from 'body-parser'
+import express from 'express'
+import { initializeRoutes } from './router'
 
-console.log("DB_PASS:", process.env.DB_PASSWORD);
-const app = express();
+console.log('DB_PASS:', process.env.DB_PASSWORD)
+const app = express()
 
-app.use(bodyParser.json());
+app.use(bodyParser.json())
 
-const apiRouter = initializeRoutes();
-app.use("/api", apiRouter);
+const apiRouter = initializeRoutes()
+app.use('/api', apiRouter)
 
-export default app;
+export default app
